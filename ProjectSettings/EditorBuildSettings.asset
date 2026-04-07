@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1045 &1
+EditorBuildSettings:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Scenes:
+  - enabled: 0
+    path: Assets/_PD/Scenes/PD Main.unity
+    guid: 880e9d9ec9bb0e6448888f75223a3767
+  - enabled: 0
+    path: Assets/Scenes/Baby of Diya.unity
+    guid: b58517fe55735f24b843e029e0ba890f
+  - enabled: 0
+    path: Assets/Scenes/Baby of Deepa.unity
+    guid: c5e7e10d508c5e548959251b711fd353
+  - enabled: 0
+    path: Assets/Scenes/Baby of Hema.unity
+    guid: 7a68c7a36ec882141ae80d152579dc07
+  - enabled: 0
+    path: Assets/Scenes/Raghav.unity
+    guid: 60abfa4db5cc6824488e26fcd75f68f5
+  - enabled: 1
+    path: Assets/Scenes/Baby of Deepa 1.unity
+    guid: 8dbbcfe1ce7d55c46b2c627c6e2c56d4
+  m_configObjects:
+    Unity.XR.Oculus.Settings: {fileID: 11400000, guid: f2c7459e88b50d04782f6a6175f2ae9b, type: 2}
+    com.unity.xr.management.loader_settings: {fileID: 11400000, guid: 6a86aa8a8c6bda34597064e14d454d65, type: 2}
+    com.unity.xr.openxr.settings4: {fileID: 11400000, guid: e7491cbc8e281874cb5db309b737999b, type: 2}
+  m_UseUCBPForAssetBundles: 0

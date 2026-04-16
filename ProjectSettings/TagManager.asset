@@ -6,6 +6,15 @@ TagManager:
   tags:
   - CollisionUI
   - RoomLight
+  - QDSUIToggleButton
+  - QDSUITextInvertedColor
+  - QDSUIBackplateGradient
+  - QDSUIAccentColor
+  - Wickets
+  - QDSUITextSecondaryInvertedColor
+  - Ground
+  - Bat
+  - Ball
   layers:
   - Default
   - TransparentFX

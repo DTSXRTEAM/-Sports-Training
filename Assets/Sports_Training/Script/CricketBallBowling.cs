@@ -28,8 +28,6 @@ public class CricketBallBowling : MonoBehaviour
 
     private Rigidbody rb;
     private float speed;
-
-    // 🔥 STORE LAST DIRECTION
     private Vector3 lastDirection;
 
     void Start()
@@ -40,6 +38,7 @@ public class CricketBallBowling : MonoBehaviour
 
     IEnumerator BowlRoutine()
     {
+        // RESET BALL
         rb.linearVelocity = Vector3.zero;
         rb.angularVelocity = Vector3.zero;
         rb.isKinematic = true;
@@ -47,8 +46,9 @@ public class CricketBallBowling : MonoBehaviour
 
         transform.position = bowlingPoint.position;
 
-        yield return new WaitForSeconds(1f);
+        // ❌ REMOVED WAIT HERE (NO DELAY)
 
+        // RANDOM TARGETS
         Transform pitch = pitchPoints[Random.Range(0, pitchPoints.Length)];
         Transform bat = batPoints[Random.Range(0, batPoints.Length)];
 
@@ -92,7 +92,6 @@ public class CricketBallBowling : MonoBehaviour
 
             pos.y += Mathf.Sin(t * Mathf.PI) * 1f;
 
-            // 🔥 STORE DIRECTION
             lastDirection = (pos - transform.position).normalized;
 
             transform.position = pos;
@@ -125,7 +124,6 @@ public class CricketBallBowling : MonoBehaviour
                 pos += transform.right * turn;
             }
 
-            // 🔥 STORE DIRECTION
             lastDirection = (pos - transform.position).normalized;
 
             transform.position = pos;
@@ -136,13 +134,11 @@ public class CricketBallBowling : MonoBehaviour
 
         transform.position = target;
 
-        // 🔥 SWITCH TO PHYSICS
+        // SWITCH TO PHYSICS
         rb.isKinematic = false;
         rb.useGravity = true;
 
-        // ✅ USE LAST VALID DIRECTION (FIX)
         rb.linearVelocity = lastDirection * speed;
-
         rb.AddForce(Vector3.down * 2f, ForceMode.Impulse);
 
         if (enableSpin)

@@ -1,72 +1,92 @@
 ﻿using UnityEngine;
 using UnityEngine.XR;
-using System.Collections.Generic;
+using System.Collections;
 
 public class BallManager : MonoBehaviour
 {
     [Header("Spawn Settings")]
     public GameObject prefab;
-public Transform spawnPoint;
+    public Transform spawnPoint;
 
-[Header("Destroy Time")]
-public float destroyAfterSeconds = 3f;
+    [Header("Over Counter")]
+    public OverCounter overCounter;
 
-[Header("XR Input")]
-public XRNode controllerNode = XRNode.RightHand;
-public float triggerThreshold = 0.8f;
+    [Header("Score System")]
+    //public ScoreSystem scoreSystem; // 👈 ADD THIS
 
-private InputDevice device;
-private bool isPressed = false;
-private bool isActive = false; // BLOCK SPAWN DURING LIFETIME
+    [Header("Destroy Time")]
+    public float destroyAfterSeconds = 5f;
 
-void Start()
-{
-    device = InputDevices.GetDeviceAtXRNode(controllerNode);
-}
+    [Header("XR Input")]
+    public XRNode controllerNode = XRNode.RightHand;
+    public float triggerThreshold = 0.8f;
 
-void Update()
-{
-    if (!device.isValid)
-        device = InputDevices.GetDeviceAtXRNode(controllerNode);
+    private InputDevice device;
+    private bool isPressed = false;
+    private bool isActive = false;
 
-    float triggerValue;
-    if (device.TryGetFeatureValue(CommonUsages.trigger, out triggerValue))
+    void Start()
     {
-        // PRESS
-        if (triggerValue > triggerThreshold && !isPressed)
-        {
-            isPressed = true;
+        device = InputDevices.GetDeviceAtXRNode(controllerNode);
+    }
 
-            if (!isActive)
+    void Update()
+    {
+        if (!device.isValid)
+            device = InputDevices.GetDeviceAtXRNode(controllerNode);
+
+        float triggerValue;
+
+        if (device.TryGetFeatureValue(CommonUsages.trigger, out triggerValue))
+        {
+            // PRESS
+            if (triggerValue > triggerThreshold && !isPressed)
             {
-                SpawnObject();
+                isPressed = true;
+
+                if (!isActive)
+                {
+                    SpawnObject();
+                }
+            }
+
+            // RELEASE
+            if (triggerValue < 0.2f)
+            {
+                isPressed = false;
             }
         }
-
-        // RELEASE
-        if (triggerValue < 0.2f)
-        {
-            isPressed = false;
-        }
     }
-}
 
-void SpawnObject()
-{
-    isActive = true;
+    void SpawnObject()
+    {
+        isActive = true;
 
-    GameObject obj = Instantiate(prefab, spawnPoint.position, spawnPoint.rotation);
+        // 🔥 SPAWN BALL
+        GameObject obj = Instantiate(prefab, spawnPoint.position, spawnPoint.rotation);
 
-    StartCoroutine(DestroyAfterTime(obj));
-}
+        // 🔥 RESET SCORE FOR NEW BALL
+        //if (scoreSystem != null)
+        //{
+        //    //scoreSystem.ResetBallScore(); // 👈 allow next ball to score
+        //}
 
-System.Collections.IEnumerator DestroyAfterTime(GameObject obj)
-{
-    yield return new WaitForSeconds(destroyAfterSeconds);
+        // 🔥 OVER COUNT
+        if (overCounter != null)
+        {
+            overCounter.AddBall();
+        }
 
-    if (obj != null)
-        Destroy(obj);
+        StartCoroutine(DestroyAfterTime(obj));
+    }
 
-    isActive = false; // ALLOW NEXT SPAWN
-}
+    IEnumerator DestroyAfterTime(GameObject obj)
+    {
+        yield return new WaitForSeconds(destroyAfterSeconds);
+
+        if (obj != null)
+            Destroy(obj);
+
+        isActive = false;
+    }
 }

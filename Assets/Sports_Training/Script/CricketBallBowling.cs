@@ -12,7 +12,7 @@ public class CricketBallBowling : MonoBehaviour
     public float minSpeed = 20f;
     public float maxSpeed = 40f;
 
-    [Header("Swing")]
+    [Header("Swing (after pitch only)")]
     public float swingAmount = 0.5f;
 
     [Header("Bounce Control")]
@@ -52,7 +52,7 @@ public class CricketBallBowling : MonoBehaviour
 
         float swingDir = Random.value > 0.5f ? 1f : -1f;
 
-        // ✅ FULL BALL SAME SPEED
+        // ✅ SAME SPEED FOR FULL BALL
         speed = Random.Range(minSpeed, maxSpeed);
 
         // ✅ SEPARATE BOUNCE TYPES
@@ -75,26 +75,22 @@ public class CricketBallBowling : MonoBehaviour
         {
             Vector3 currentTarget = reachedPitch ? target : pitch;
 
-            // ✅ CONSTANT SPEED MOVEMENT
+            // ✅ CONSTANT SPEED
             transform.position = Vector3.MoveTowards(
                 transform.position,
                 currentTarget,
                 speed * Time.deltaTime
             );
 
-            Vector3 dir = (currentTarget - transform.position).normalized;
-
-            // 👉 BEFORE PITCH (SWING ONLY)
+            // 👉 BEFORE PITCH (NO SWING)
             if (!reachedPitch)
             {
-                transform.position += transform.right * swingAmount * swingDir * Time.deltaTime;
-
                 if (Vector3.Distance(transform.position, pitch) < 0.05f)
                 {
                     reachedPitch = true;
                 }
             }
-            // 👉 AFTER PITCH (BOUNCE + SPIN)
+            // 👉 AFTER PITCH (SWING + BOUNCE + SPIN)
             else
             {
                 bounceTimer += Time.deltaTime;
@@ -102,8 +98,13 @@ public class CricketBallBowling : MonoBehaviour
                 float t = bounceTimer / bounceDuration;
                 float height = Mathf.Sin(t * Mathf.PI) * bounceHeight;
 
+                // BOUNCE
                 transform.position += Vector3.up * height * Time.deltaTime;
 
+                // SWING (only after pitch)
+                transform.position += transform.right * swingAmount * swingDir * Time.deltaTime;
+
+                // SPIN SIDE EFFECT
                 if (enableSpin)
                 {
                     transform.position += transform.right * spinSideForce * swingDir * Time.deltaTime;
@@ -118,7 +119,7 @@ public class CricketBallBowling : MonoBehaviour
 
         transform.position = target;
 
-        // ✅ CONTINUE WITH SAME SPEED
+        // PHYSICS CONTINUE SAME SPEED
         rb.isKinematic = false;
         rb.useGravity = true;
 

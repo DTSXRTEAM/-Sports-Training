@@ -6,10 +6,12 @@ public class ScoreSystem : MonoBehaviour
 {
     public TextMeshPro scoreText;
 
-    public GameObject targetObject;   // 👈 Assign in Inspector
-    public float activeTime = 2f;     // 👈 Seconds before disable
+    public GameObject targetObject;
+    public float activeTime = 2f;
 
-    private int totalScore = 0;
+    [Header("Initial Score")]
+    public int totalScore = 0;   // 👈 SET 256 IN INSPECTOR
+
     private bool hasScored = false;
 
     private void Start()
@@ -17,7 +19,7 @@ public class ScoreSystem : MonoBehaviour
         UpdateText();
 
         if (targetObject != null)
-            targetObject.SetActive(false); // start disabled
+            targetObject.SetActive(false);
     }
 
     private void OnTriggerEnter(Collider other)
@@ -28,11 +30,10 @@ public class ScoreSystem : MonoBehaviour
 
         if (sc != null && other.CompareTag("ScoreZone"))
         {
-            totalScore += sc.scoreValue;
+            totalScore += sc.scoreValue; // ✅ adds to existing score
             UpdateText();
             hasScored = true;
 
-            // ✅ Enable + auto disable
             if (targetObject != null)
                 StartCoroutine(EnableTemporarily());
         }

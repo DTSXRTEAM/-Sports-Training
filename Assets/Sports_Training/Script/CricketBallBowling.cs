@@ -8,27 +8,28 @@ public class CricketBallBowling : MonoBehaviour
     public Transform[] pitchPoints;
     public Transform[] batPoints;
 
-    [Header("Bowling Type")]
-    public bool enableSpin = false;
-
-    [Header("Speed")]
-    public float minSpeed = 12f;
-    public float maxSpeed = 18f;
+    [Header("Speed (per ball full constant)")]
+    public float minSpeed = 20f;
+    public float maxSpeed = 40f;
 
     [Header("Swing")]
-    public float swingAmount = 1.5f;
+    public float swingAmount = 0.5f;
 
-    [Header("Bounce")]
-    public float minBounce = 0.5f;
-    public float maxBounce = 1.5f;
+    [Header("Bounce Control")]
+    public float fastBounceMin = 0.3f;
+    public float fastBounceMax = 0.8f;
+
+    public float spinBounceMin = 0.6f;
+    public float spinBounceMax = 1.2f;
 
     [Header("Spin")]
-    public float spinForce = 8f;
-    public float spinSideForce = 1.2f;
+    public bool enableSpin = false;
+    public float spinSideForce = 0.5f;
+    public float spinTorque = 6f;
 
     private Rigidbody rb;
     private float speed;
-    private Vector3 lastDirection;
+    private float bounceHeight;
 
     void Start()
     {
@@ -38,7 +39,7 @@ public class CricketBallBowling : MonoBehaviour
 
     IEnumerator BowlRoutine()
     {
-        // RESET BALL
+        // RESET
         rb.linearVelocity = Vector3.zero;
         rb.angularVelocity = Vector3.zero;
         rb.isKinematic = true;
@@ -46,104 +47,87 @@ public class CricketBallBowling : MonoBehaviour
 
         transform.position = bowlingPoint.position;
 
-        // ❌ REMOVED WAIT HERE (NO DELAY)
-
-        // RANDOM TARGETS
         Transform pitch = pitchPoints[Random.Range(0, pitchPoints.Length)];
         Transform bat = batPoints[Random.Range(0, batPoints.Length)];
 
-        float bounceHeight;
         float swingDir = Random.value > 0.5f ? 1f : -1f;
 
+        // ✅ FULL BALL SAME SPEED
+        speed = Random.Range(minSpeed, maxSpeed);
+
+        // ✅ SEPARATE BOUNCE TYPES
         if (enableSpin)
-        {
-            speed = Random.Range(8f, 12f);
-            bounceHeight = Random.Range(1.2f, 2f);
-        }
+            bounceHeight = Random.Range(spinBounceMin, spinBounceMax);
         else
-        {
-            speed = Random.Range(minSpeed, maxSpeed);
-            bounceHeight = Random.Range(minBounce, maxBounce);
-        }
+            bounceHeight = Random.Range(fastBounceMin, fastBounceMax);
 
-        yield return MoveWithSwing(pitch.position, swingDir);
-
-        yield return new WaitForSeconds(0.05f);
-
-        yield return MoveAfterBounce(pitch.position, bat.position, bounceHeight, swingDir);
+        yield return MoveFull(pitch.position, bat.position, swingDir);
     }
 
-    IEnumerator MoveWithSwing(Vector3 target, float swingDir)
+    IEnumerator MoveFull(Vector3 pitch, Vector3 target, float swingDir)
     {
-        Vector3 start = transform.position;
-        float distance = Vector3.Distance(start, target);
-        float duration = distance / speed;
+        bool reachedPitch = false;
 
-        float time = 0;
+        float bounceTimer = 0f;
+        float bounceDuration = 0.35f;
 
-        while (time < duration)
+        while (true)
         {
-            float t = time / duration;
+            Vector3 currentTarget = reachedPitch ? target : pitch;
 
-            Vector3 pos = Vector3.Lerp(start, target, t);
+            // ✅ CONSTANT SPEED MOVEMENT
+            transform.position = Vector3.MoveTowards(
+                transform.position,
+                currentTarget,
+                speed * Time.deltaTime
+            );
 
-            float swing = Mathf.Sin(t * Mathf.PI) * swingAmount * swingDir;
-            pos += transform.right * swing;
+            Vector3 dir = (currentTarget - transform.position).normalized;
 
-            pos.y += Mathf.Sin(t * Mathf.PI) * 1f;
-
-            lastDirection = (pos - transform.position).normalized;
-
-            transform.position = pos;
-
-            time += Time.deltaTime;
-            yield return null;
-        }
-
-        transform.position = target;
-    }
-
-    IEnumerator MoveAfterBounce(Vector3 pitch, Vector3 target, float bounceHeight, float dir)
-    {
-        float distance = Vector3.Distance(pitch, target);
-        float duration = distance / speed;
-
-        float time = 0;
-
-        while (time < duration)
-        {
-            float t = time / duration;
-
-            Vector3 pos = Vector3.Lerp(pitch, target, t);
-
-            pos.y += Mathf.Sin(t * Mathf.PI) * bounceHeight;
-
-            if (enableSpin)
+            // 👉 BEFORE PITCH (SWING ONLY)
+            if (!reachedPitch)
             {
-                float turn = Mathf.Sin(t * Mathf.PI) * spinSideForce * dir;
-                pos += transform.right * turn;
+                transform.position += transform.right * swingAmount * swingDir * Time.deltaTime;
+
+                if (Vector3.Distance(transform.position, pitch) < 0.05f)
+                {
+                    reachedPitch = true;
+                }
+            }
+            // 👉 AFTER PITCH (BOUNCE + SPIN)
+            else
+            {
+                bounceTimer += Time.deltaTime;
+
+                float t = bounceTimer / bounceDuration;
+                float height = Mathf.Sin(t * Mathf.PI) * bounceHeight;
+
+                transform.position += Vector3.up * height * Time.deltaTime;
+
+                if (enableSpin)
+                {
+                    transform.position += transform.right * spinSideForce * swingDir * Time.deltaTime;
+                }
+
+                if (Vector3.Distance(transform.position, target) < 0.1f)
+                    break;
             }
 
-            lastDirection = (pos - transform.position).normalized;
-
-            transform.position = pos;
-
-            time += Time.deltaTime;
             yield return null;
         }
 
         transform.position = target;
 
-        // SWITCH TO PHYSICS
+        // ✅ CONTINUE WITH SAME SPEED
         rb.isKinematic = false;
         rb.useGravity = true;
 
-        rb.linearVelocity = lastDirection * speed;
-        rb.AddForce(Vector3.down * 2f, ForceMode.Impulse);
+        Vector3 finalDir = (target - pitch).normalized;
+        rb.linearVelocity = finalDir * speed;
 
         if (enableSpin)
         {
-            rb.AddTorque(Random.onUnitSphere * spinForce, ForceMode.Impulse);
+            rb.AddTorque(Random.onUnitSphere * spinTorque, ForceMode.Impulse);
         }
     }
 

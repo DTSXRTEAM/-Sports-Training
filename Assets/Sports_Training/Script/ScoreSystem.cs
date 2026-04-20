@@ -1,16 +1,23 @@
 ﻿using UnityEngine;
 using TMPro;
+using System.Collections;
 
 public class ScoreSystem : MonoBehaviour
 {
     public TextMeshPro scoreText;
 
-    private int totalScore = 0;   // ✅ NEVER reset this
+    public GameObject targetObject;   // 👈 Assign in Inspector
+    public float activeTime = 2f;     // 👈 Seconds before disable
+
+    private int totalScore = 0;
     private bool hasScored = false;
 
     private void Start()
     {
         UpdateText();
+
+        if (targetObject != null)
+            targetObject.SetActive(false); // start disabled
     }
 
     private void OnTriggerEnter(Collider other)
@@ -21,16 +28,26 @@ public class ScoreSystem : MonoBehaviour
 
         if (sc != null && other.CompareTag("ScoreZone"))
         {
-            totalScore += sc.scoreValue; // ✅ ADD ONLY
+            totalScore += sc.scoreValue;
             UpdateText();
             hasScored = true;
+
+            // ✅ Enable + auto disable
+            if (targetObject != null)
+                StartCoroutine(EnableTemporarily());
         }
     }
 
-    // ✅ ONLY unlock scoring for next ball
+    IEnumerator EnableTemporarily()
+    {
+        targetObject.SetActive(true);
+        yield return new WaitForSeconds(activeTime);
+        targetObject.SetActive(false);
+    }
+
     public void ResetBallScore()
     {
-        hasScored = false; // ❌ DO NOT touch totalScore
+        hasScored = false;
     }
 
     void UpdateText()

@@ -3,7 +3,6 @@ using TMPro;
 
 public class OverCounter : MonoBehaviour
 {
-    [Header("3D Text")]
     public TextMeshPro overText;
 
     private int over = 0;
@@ -14,15 +13,15 @@ public class OverCounter : MonoBehaviour
         UpdateText();
     }
 
-    // 🔥 CALL THIS FROM BALL MANAGER
     public void AddBall()
     {
         ball++;
 
-        if (ball > 6)
+        // ✅ FIX: check == 6 instead of > 6
+        if (ball == 6)
         {
             over++;
-            ball = 1;
+            ball = 0; // reset to 0 (new over starts)
         }
 
         UpdateText();
@@ -32,7 +31,7 @@ public class OverCounter : MonoBehaviour
     {
         if (overText != null)
         {
-            overText.text = over.ToString() + "." + ball.ToString();
+            overText.text = over + "." + ball;
         }
     }
 }

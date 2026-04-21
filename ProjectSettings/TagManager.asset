@@ -17,6 +17,7 @@ TagManager:
   - Ball
   - Boundary
   - ScoreZone
+  - reccam
   layers:
   - Default
   - TransparentFX

@@ -20,9 +20,12 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/Scenes/Raghav.unity
     guid: 60abfa4db5cc6824488e26fcd75f68f5
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/Baby of Deepa 1.unity
     guid: 8dbbcfe1ce7d55c46b2c627c6e2c56d4
+  - enabled: 1
+    path: Assets/Sports_Training/Scene/Cricket_V1.unity
+    guid: cb10dfb50edb1ff4ba7e9272d7e440d8
   m_configObjects:
     Unity.XR.Oculus.Settings: {fileID: 11400000, guid: f2c7459e88b50d04782f6a6175f2ae9b, type: 2}
     com.unity.xr.management.loader_settings: {fileID: 11400000, guid: 6a86aa8a8c6bda34597064e14d454d65, type: 2}
